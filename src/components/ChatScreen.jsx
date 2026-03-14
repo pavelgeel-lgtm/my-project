@@ -56,7 +56,7 @@ export default function ChatScreen({ onBack }) {
           'Authorization': `Bearer ${GROK_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'grok-3-mini',
+          model: 'grok-beta',
           messages: [
             { role: 'system', content: system },
             ...messages,

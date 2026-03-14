@@ -4,9 +4,20 @@ const KEY_POINTS = 'club50_points'
 const KEY_COMPLETED = 'club50_completed_days'
 const KEY_GAME_ORDER = 'club50_game_order'
 
+// Текущее время в МСК (UTC+3)
 function nowMSK() {
   const now = new Date()
-  return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000)
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000
+  return new Date(utcMs + 3 * 3600000)
+}
+
+// 7:00 МСК сегодня в UTC миллисекундах
+function today7amMSK() {
+  const msk = nowMSK()
+  const d = new Date(msk)
+  d.setHours(7, 0, 0, 0)
+  // Переводим обратно в UTC
+  return d.getTime() - 3 * 3600000 - new Date().getTimezoneOffset() * 60000 + new Date().getTime() - new Date().getTime()
 }
 
 export function activate() {
@@ -23,28 +34,51 @@ export function isActivated() {
   return !!localStorage.getItem(KEY_ACTIVATED)
 }
 
+// День считается по числу 7:00 МСК которые прошли с активации
+// День 1 = сразу после активации
+// День 2 = после первой 7:00 МСК следующего дня
 export function getCurrentDay() {
   const activatedAt = getActivatedAt()
   if (!activatedAt) return 0
+
   const msk = nowMSK()
-  const activationMsk = new Date(activatedAt + (new Date(activatedAt).getTimezoneOffset() + 180) * 60000)
-  const activationDate = new Date(activationMsk)
-  activationDate.setHours(0, 0, 0, 0)
-  const todayMsk = new Date(msk)
-  todayMsk.setHours(0, 0, 0, 0)
-  const daysElapsed = Math.floor((todayMsk - activationDate) / 86400000)
-  const hour = msk.getHours()
+  const nowH = msk.getHours()
+
+  // Дата активации в МСК
+  const activationMsk = new Date(activatedAt + msk.getTimezoneOffset() * 60000 + 3 * 3600000)
+  const activationDateStr = `${activationMsk.getFullYear()}-${activationMsk.getMonth()}-${activationMsk.getDate()}`
+
+  // Сегодняшняя дата в МСК
+  const todayStr = `${msk.getFullYear()}-${msk.getMonth()}-${msk.getDate()}`
+
+  // Дней прошло с даты активации
+  const activationDay = new Date(activationMsk.getFullYear(), activationMsk.getMonth(), activationMsk.getDate())
+  const todayDay = new Date(msk.getFullYear(), msk.getMonth(), msk.getDate())
+  const daysElapsed = Math.floor((todayDay - activationDay) / 86400000)
+
+  // День 1 = день активации (всегда)
+  // День N открывается в 7:00 МСК на N-й день после активации
   let day = daysElapsed + 1
-  if (daysElapsed > 0 && hour < 7) day = daysElapsed
+  if (daysElapsed > 0 && nowH < 7) {
+    day = daysElapsed // до 7:00 МСК — предыдущий день
+  }
+
   return Math.min(Math.max(day, 1), 21)
 }
 
+// Миллисекунды до следующей 7:00 МСК
 export function getMsUntilNextDay() {
   const msk = nowMSK()
-  const next = new Date(msk)
-  next.setDate(next.getDate() + 1)
-  next.setHours(7, 0, 0, 0)
-  return Math.max(0, next.getTime() - msk.getTime())
+  const next7am = new Date(msk)
+
+  // Если сейчас до 7:00 — до сегодняшней 7:00
+  // Если после 7:00 — до завтрашней 7:00
+  if (msk.getHours() >= 7) {
+    next7am.setDate(next7am.getDate() + 1)
+  }
+  next7am.setHours(7, 0, 0, 0)
+
+  return Math.max(0, next7am.getTime() - msk.getTime())
 }
 
 export function isDayUnlocked(day) {
