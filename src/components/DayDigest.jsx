@@ -28,21 +28,49 @@ function TopBar({ day, points, onBack, onChat }) {
   )
 }
 
-function Toast({ visible, children, gold }) {
+function PointsToast({ pts, visible }) {
+  if (!visible) return null
+  return (
+    <div style={{
+      position:'fixed', top:'50%', left:'50%',
+      background:'#c8a84b',
+      color:'#0e0e0e',
+      padding:'20px 40px',
+      fontSize:28,
+      fontWeight:700,
+      zIndex:1000,
+      pointerEvents:'none',
+      letterSpacing:'-0.01em',
+      animation:'ptsAnim 1.8s ease forwards',
+    }}>
+      +{pts} очков
+      <style>{`
+        @keyframes ptsAnim {
+          0%   { opacity:1; transform:translate(-50%,-50%) }
+          60%  { opacity:1; transform:translate(-50%,-60%) }
+          100% { opacity:0; transform:translate(-50%,-75%) }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function DayCompleteToast({ visible }) {
   return (
     <div style={{
       position:'fixed', top:'50%', left:'50%',
       transform: visible ? 'translate(-50%,-50%)' : 'translate(-50%,-58%)',
-      background: gold ? 'rgba(200,168,75,0.9)' : 'rgba(29,158,117,0.88)',
+      background:'rgba(29,158,117,0.88)',
       backdropFilter:'blur(10px)',
       WebkitBackdropFilter:'blur(10px)',
-      color: gold ? '#0e0e0e' : '#fff',
+      color:'#fff',
       padding:'22px 44px', zIndex:1000, pointerEvents:'none',
       textAlign:'center', maxWidth:300, width:'88%',
       opacity: visible ? 1 : 0,
       transition:'opacity 0.4s ease, transform 0.4s ease',
     }}>
-      {children}
+      <div style={{ fontSize:20, fontWeight:200, marginBottom:6 }}>День завершён</div>
+      <div style={{ fontSize:13, fontWeight:300, opacity:0.8, letterSpacing:'0.04em' }}>Отличная работа, Максим</div>
     </div>
   )
 }
@@ -75,11 +103,11 @@ export default function DayDigest({ day, onBack, onOpenChat }) {
 
   return (
     <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', flexDirection:'column', color:'#f0ebe0' }}>
-      <Toast visible={showPts} gold>
+      <PointsToast pts={lastPts} visible={showPts} />
         <div style={{ fontSize:36, fontWeight:200, letterSpacing:'-0.02em', lineHeight:1 }}>+{lastPts}</div>
         <div style={{ fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase', opacity:0.65, marginTop:6 }}>очков клуба</div>
       </Toast>
-      <Toast visible={showComplete} gold={false}>
+      <DayCompleteToast visible={showComplete} />
         <div style={{ fontSize:20, fontWeight:200, marginBottom:6 }}>День завершён</div>
         <div style={{ fontSize:13, fontWeight:300, opacity:0.8, letterSpacing:'0.04em' }}>Отличная работа, Максим</div>
       </Toast>
