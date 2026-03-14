@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { getCurrentDay, getPoints, getAnswers } from '../storage'
 
-const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
+
 
 function buildSystem(day, points, answers) {
   const allContext = Object.entries(answers).map(([d, a]) => {
@@ -49,11 +49,11 @@ export default function ChatScreen({ onBack }) {
     setLoading(true)
     try {
       const system = buildSystem(day, getPoints(), getAnswers())
-      const res = await fetch('https://api.x.ai/v1/chat/completions', {
+      const res = await fetch('https://shy-sunset-614agrok-proxy.pavelgeel.workers.dev/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${GROK_API_KEY}`
+          
         },
         body: JSON.stringify({
           model: 'grok-beta',
