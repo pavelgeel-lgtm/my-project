@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import './styles.css'
 import { isActivated, isDayCompleted } from './storage'
 import InviteScreen from './components/InviteScreen'
@@ -9,77 +9,34 @@ import Archive from './components/Archive'
 import ChatScreen from './components/ChatScreen'
 import FinalGift from './components/FinalGift'
 
-const SCREENS = {
-  INVITE: 'invite',
-  AUDIO: 'audio',
-  DASHBOARD: 'dashboard',
-  DAY: 'day',
-  ARCHIVE: 'archive',
-  CHAT: 'chat',
-  FINAL: 'final',
-}
-
-const AUDIO_SHOWN_KEY = 'club50_audio_shown'
+const AUDIO_KEY = 'club50_audio_shown'
 
 export default function App() {
   const [screen, setScreen] = useState(() => {
-    if (!isActivated()) return SCREENS.INVITE
-    if (!localStorage.getItem(AUDIO_SHOWN_KEY)) return SCREENS.AUDIO
-    return SCREENS.DASHBOARD
+    if (!isActivated()) return 'invite'
+    if (!localStorage.getItem(AUDIO_KEY)) return 'audio'
+    return 'dashboard'
   })
   const [activeDay, setActiveDay] = useState(null)
+  const [prevScreen, setPrevScreen] = useState('dashboard')
 
-  function handleActivated() {
-    setScreen(SCREENS.AUDIO)
-  }
-
-  function handleAudioDone() {
-    localStorage.setItem(AUDIO_SHOWN_KEY, '1')
-    setScreen(SCREENS.DASHBOARD)
-  }
-
-  function openDay(day) {
-    setActiveDay(day)
-    setScreen(SCREENS.DAY)
-  }
-
-  function backToDashboard() {
-    setScreen(SCREENS.DASHBOARD)
-    setActiveDay(null)
-  }
+  function openDay(day) { setActiveDay(day); setScreen('day') }
+  function openChat() { setPrevScreen(screen); setScreen('chat') }
+  function backFromChat() { setScreen(prevScreen) }
+  function backToDashboard() { setScreen('dashboard'); setActiveDay(null) }
 
   return (
     <>
-      {screen === SCREENS.INVITE && (
-        <InviteScreen onActivated={handleActivated} />
-      )}
-      {screen === SCREENS.AUDIO && (
-        <AudioGreeting onDone={handleAudioDone} />
-      )}
-      {screen === SCREENS.DASHBOARD && (
-        <Dashboard
-          onOpenDay={openDay}
-          onOpenArchive={() => setScreen(SCREENS.ARCHIVE)}
-          onOpenChat={() => setScreen(SCREENS.CHAT)}
-        />
-      )}
-      {screen === SCREENS.DAY && activeDay && (
+      {screen === 'invite' && <InviteScreen onActivated={() => setScreen('audio')} />}
+      {screen === 'audio' && <AudioGreeting onDone={() => { localStorage.setItem(AUDIO_KEY,'1'); setScreen('dashboard') }} />}
+      {screen === 'dashboard' && <Dashboard onOpenDay={openDay} onOpenArchive={() => setScreen('archive')} onOpenChat={openChat} />}
+      {screen === 'day' && activeDay && (
         activeDay === 21 && isDayCompleted(21)
           ? <FinalGift onBack={backToDashboard} />
-          : <DayDigest day={activeDay} onBack={backToDashboard} />
+          : <DayDigest day={activeDay} onBack={backToDashboard} onOpenChat={openChat} />
       )}
-      {screen === SCREENS.ARCHIVE && (
-        <Archive
-          onBack={backToDashboard}
-          onOpenDay={openDay}
-        />
-      )}
-      {screen === SCREENS.CHAT && (
-        <ChatScreen onBack={backToDashboard} />
-      )}
-      {screen === SCREENS.FINAL && (
-        <FinalGift onBack={backToDashboard} />
-      )}
+      {screen === 'archive' && <Archive onBack={backToDashboard} onOpenDay={openDay} onOpenChat={openChat} />}
+      {screen === 'chat' && <ChatScreen onBack={backFromChat} />}
     </>
   )
 }

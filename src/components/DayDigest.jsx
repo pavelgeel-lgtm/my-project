@@ -1,379 +1,281 @@
 import React, { useState } from 'react'
 import { CHALLENGES, QUESTIONS, WISDOM, GAMES, EVENTS } from '../data/content'
-import { saveAnswer, getAnswerForDay, addPoints, markDayCompleted, isDayCompleted } from '../storage'
+import { saveAnswer, getAnswerForDay, addPoints, markDayCompleted } from '../storage'
 
-const CARD_POINTS = { event: 10, question: 10, game: 15, wisdom: 5, challenge: 15 }
+const POINTS = { event:10, question:10, game:15, wisdom:5, challenge:15 }
 
-export default function DayDigest({ day, onBack }) {
-  const [cardIndex, setCardIndex] = useState(0)
-  const cards = ['event', 'question', 'game', 'wisdom', 'challenge']
-  const currentCard = cards[cardIndex]
-
-  function goNext() {
-    if (cardIndex < cards.length - 1) setCardIndex(cardIndex + 1)
-    else {
-      markDayCompleted(day)
-      onBack()
-    }
-  }
-
+function TopBar({ day, onBack, onChat }) {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--cream)', padding: 'clamp(1.5rem, 4vw, 3rem)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '2rem' }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', fontSize: 20, color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>←</button>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.2rem 2rem', borderBottom:'1px solid rgba(255,255,255,0.07)', flexWrap:'wrap', gap:12 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+        <button onClick={onBack} style={{ color:'rgba(255,255,255,0.4)', fontSize:20, cursor:'pointer', background:'none', border:'none', padding:0 }}>←</button>
         <div>
-          <div style={{ fontSize: 9, letterSpacing: '0.25em', color: 'var(--gold)', textTransform: 'uppercase' }}>День {day}</div>
-          <div style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', fontWeight: 200, color: 'var(--text-primary)' }}>Дайджест клуба</div>
+          <div style={{ fontSize:10, letterSpacing:'0.22em', color:'#c8a84b', textTransform:'uppercase' }}>День {day}</div>
+          <div style={{ fontSize:18, fontWeight:200, color:'#f0ebe0' }}>Дайджест клуба</div>
         </div>
       </div>
-
-      {/* Progress dots */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: '2rem' }}>
-        {cards.map((c, i) => (
-          <div key={c} style={{
-            height: 2,
-            flex: 1,
-            background: i <= cardIndex ? 'var(--gold)' : 'rgba(180,150,63,0.2)',
-            transition: 'background 0.3s',
-          }} />
-        ))}
-      </div>
-
-      {/* Card */}
-      {currentCard === 'event' && <EventCard day={day} onNext={goNext} />}
-      {currentCard === 'question' && <QuestionCard day={day} onNext={goNext} />}
-      {currentCard === 'game' && <GameCard day={day} onNext={goNext} />}
-      {currentCard === 'wisdom' && <WisdomCard day={day} onNext={goNext} />}
-      {currentCard === 'challenge' && <ChallengeCard day={day} onNext={goNext} isLast />}
-    </div>
-  )
-}
-
-function CardShell({ label, children, onNext, nextLabel = 'Далее', points, disabled }) {
-  return (
-    <div>
-      <div style={{ fontSize: 9, letterSpacing: '0.25em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-        {label}
-        {points && <span style={{ color: 'var(--text-muted)' }}>+{points} очков</span>}
-      </div>
-      <div style={{ marginBottom: '2rem' }}>{children}</div>
-      <button
-        onClick={onNext}
-        disabled={disabled}
-        style={{
-          background: disabled ? '#ccc' : 'var(--dark)',
-          color: disabled ? '#999' : 'var(--cream)',
-          border: 'none',
-          padding: '16px 28px',
-          fontSize: 10,
-          fontWeight: 400,
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          cursor: disabled ? 'default' : 'pointer',
-          fontFamily: 'var(--font)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          transition: 'background 0.2s',
-          width: '100%',
-          justifyContent: 'space-between',
-        }}
-      >
-        <span>{nextLabel}</span>
-        <span>→</span>
+      <button onClick={onChat} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(200,168,75,0.1)', border:'1px solid rgba(200,168,75,0.25)', color:'#c8a84b', padding:'8px 16px', fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', cursor:'pointer', fontFamily:'var(--font)' }}>
+        <div style={{ width:6, height:6, background:'#c8a84b', transform:'rotate(45deg)' }} />
+        Мак Натал
       </button>
     </div>
   )
 }
 
-function EventCard({ day, onNext }) {
-  const event = EVENTS[day - 1]
-  const alreadyDone = getAnswerForDay(day, 'event')
+function PointsPopup({ pts, visible }) {
+  if (!visible) return null
+  return (
+    <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'rgba(200,168,75,0.95)', color:'#0e0e0e', padding:'20px 40px', fontSize:28, fontWeight:600, letterSpacing:'-0.02em', zIndex:1000, pointerEvents:'none', animation:'fadeOut 1.5s ease forwards' }}>
+      +{pts} очков
+      <style>{`@keyframes fadeOut { 0%{opacity:1;transform:translate(-50%,-60%)} 100%{opacity:0;transform:translate(-50%,-80%)} }`}</style>
+    </div>
+  )
+}
 
-  function handleNext() {
-    if (!alreadyDone) {
-      saveAnswer(day, 'event', true)
-      addPoints(CARD_POINTS.event)
-    }
+export default function DayDigest({ day, onBack, onOpenChat }) {
+  const [cardIndex, setCardIndex] = useState(0)
+  const [showPoints, setShowPoints] = useState(false)
+  const [lastPoints, setLastPoints] = useState(0)
+  const cards = ['event','question','game','wisdom','challenge']
+
+  function awardPoints(pts) {
+    addPoints(pts)
+    setLastPoints(pts)
+    setShowPoints(true)
+    setTimeout(() => setShowPoints(false), 1600)
+  }
+
+  function goNext() {
+    if (cardIndex < cards.length - 1) setCardIndex(cardIndex + 1)
+    else { markDayCompleted(day); onBack() }
+  }
+
+  return (
+    <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', flexDirection:'column', color:'#f0ebe0' }}>
+      <PointsPopup pts={lastPoints} visible={showPoints} />
+      <TopBar day={day} onBack={onBack} onChat={onOpenChat} />
+
+      <div style={{ padding:'clamp(1.5rem,4vw,2.5rem)' }}>
+        {/* Progress */}
+        <div style={{ display:'flex', gap:6, marginBottom:'2rem' }}>
+          {cards.map((c, i) => (
+            <div key={c} style={{ height:2, flex:1, background: i <= cardIndex ? '#c8a84b' : 'rgba(200,168,75,0.15)', transition:'background 0.3s' }} />
+          ))}
+        </div>
+
+        {cards[cardIndex] === 'event' && <EventCard day={day} onNext={goNext} onPoints={awardPoints} />}
+        {cards[cardIndex] === 'question' && <QuestionCard day={day} onNext={goNext} onPoints={awardPoints} />}
+        {cards[cardIndex] === 'game' && <GameCard day={day} onNext={goNext} onPoints={awardPoints} />}
+        {cards[cardIndex] === 'wisdom' && <WisdomCard day={day} onNext={goNext} onPoints={awardPoints} />}
+        {cards[cardIndex] === 'challenge' && <ChallengeCard day={day} onNext={goNext} onPoints={awardPoints} />}
+      </div>
+    </div>
+  )
+}
+
+function Btn({ onClick, disabled, children }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      width:'100%', background: disabled ? 'rgba(255,255,255,0.05)' : '#c8a84b',
+      border:'none', color: disabled ? 'rgba(255,255,255,0.2)' : '#0e0e0e',
+      padding:'18px 28px', fontSize:12, fontWeight:600, letterSpacing:'0.2em',
+      textTransform:'uppercase', cursor: disabled ? 'default' : 'pointer',
+      fontFamily:'var(--font)', display:'flex', alignItems:'center', justifyContent:'space-between', transition:'all 0.2s',
+    }}>
+      <span>{children}</span><span style={{ fontSize:16 }}>→</span>
+    </button>
+  )
+}
+
+function MacNatal({ text }) {
+  return (
+    <div style={{ marginTop:'1.5rem', display:'flex', gap:12, alignItems:'flex-start' }}>
+      <div style={{ width:34, height:34, borderRadius:'50%', background:'rgba(200,168,75,0.12)', border:'1px solid rgba(200,168,75,0.3)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+        <span style={{ fontSize:10, color:'#c8a84b', fontWeight:500 }}>МН</span>
+      </div>
+      <div style={{ background:'rgba(200,168,75,0.05)', border:'1px solid rgba(200,168,75,0.15)', padding:'12px 16px', flex:1 }}>
+        <div style={{ fontSize:9, letterSpacing:'0.18em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase', marginBottom:6 }}>Мак Натал</div>
+        <div style={{ fontSize:14, fontWeight:300, color:'rgba(255,255,255,0.7)', lineHeight:1.6 }}>{text}</div>
+      </div>
+    </div>
+  )
+}
+
+function Label({ children, pts }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:'1.5rem' }}>
+      <span style={{ fontSize:10, letterSpacing:'0.25em', color:'#c8a84b', textTransform:'uppercase' }}>{children}</span>
+      {pts && <span style={{ fontSize:10, letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', textTransform:'uppercase' }}>+{pts} очков</span>}
+    </div>
+  )
+}
+
+function EventCard({ day, onNext, onPoints }) {
+  const event = EVENTS[day - 1]
+  const done = getAnswerForDay(day, 'event')
+
+  function handle() {
+    if (!done) { saveAnswer(day, 'event', true); onPoints(POINTS.event) }
     onNext()
   }
 
   return (
-    <CardShell label="Событие дня" points={CARD_POINTS.event} onNext={handleNext} nextLabel="Читал, далее">
-      {event.photo && (
-        <div style={{ width: '100%', aspectRatio: '16/9', background: 'var(--dark)', marginBottom: '1.5rem', overflow: 'hidden' }}>
-          <img src={event.photo} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      )}
-      {!event.photo && (
-        <div style={{ width: '100%', height: 200, background: 'var(--dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>Фото будет добавлено</span>
-        </div>
-      )}
-      <div style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>{event.year}</div>
-      <div style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 200, color: 'var(--text-primary)', marginBottom: '1rem', letterSpacing: '-0.01em' }}>{event.title}</div>
-      <div style={{ fontSize: 15, fontWeight: 300, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{event.description}</div>
-      <MacNatalComment text="Каждый такой момент — часть того, кто вы есть сегодня." />
-    </CardShell>
+    <div>
+      <Label pts={POINTS.event}>Событие дня</Label>
+      {event.photo
+        ? <img src={event.photo} alt={event.title} style={{ width:'100%', aspectRatio:'16/9', objectFit:'cover', marginBottom:'1.5rem' }} />
+        : <div style={{ width:'100%', height:220, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'1.5rem' }}>
+            <span style={{ fontSize:10, letterSpacing:'0.2em', color:'rgba(255,255,255,0.2)', textTransform:'uppercase' }}>Фото появится здесь</span>
+          </div>
+      }
+      {event.year && <div style={{ fontSize:10, letterSpacing:'0.2em', color:'rgba(255,255,255,0.3)', textTransform:'uppercase', marginBottom:8 }}>{event.year}</div>}
+      <div style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:200, color:'#f0ebe0', marginBottom:'1rem', letterSpacing:'-0.01em' }}>{event.title}</div>
+      <div style={{ fontSize:15, fontWeight:300, color:'rgba(255,255,255,0.6)', lineHeight:1.7, marginBottom:'1.5rem' }}>{event.description}</div>
+      <MacNatal text="Каждый такой момент — часть того, кто вы есть сегодня." />
+      <div style={{ marginTop:'1.5rem' }}><Btn onClick={handle}>Читал, далее</Btn></div>
+    </div>
   )
 }
 
-function QuestionCard({ day, onNext }) {
+function QuestionCard({ day, onNext, onPoints }) {
   const question = QUESTIONS[day - 1]
   const saved = getAnswerForDay(day, 'question')
   const [answer, setAnswer] = useState(saved || '')
   const [submitted, setSubmitted] = useState(!!saved)
 
-  function handleSubmit() {
+  function submit() {
     if (!answer.trim()) return
     saveAnswer(day, 'question', answer)
-    addPoints(CARD_POINTS.question)
+    onPoints(POINTS.question)
     setSubmitted(true)
   }
 
   return (
-    <CardShell label="Вопрос клуба" points={CARD_POINTS.question} onNext={onNext} disabled={!submitted}>
-      <div style={{ fontSize: 'clamp(18px, 2.5vw, 24px)', fontWeight: 200, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: '2rem', letterSpacing: '-0.01em' }}>
-        {question}
-      </div>
-      {!submitted ? (
-        <div>
-          <textarea
-            value={answer}
-            onChange={e => setAnswer(e.target.value)}
-            placeholder="Ваш ответ..."
-            style={{
-              width: '100%',
-              minHeight: 120,
-              background: 'var(--cream-dark)',
-              border: '1px solid rgba(180,150,63,0.2)',
-              padding: '1rem',
-              fontSize: 14,
-              fontWeight: 300,
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font)',
-              resize: 'vertical',
-              lineHeight: 1.6,
-              marginBottom: '1rem',
-            }}
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={!answer.trim()}
-            style={{
-              background: answer.trim() ? 'var(--gold)' : 'rgba(180,150,63,0.2)',
-              color: answer.trim() ? 'var(--dark)' : 'var(--text-muted)',
-              border: 'none',
-              padding: '12px 24px',
-              fontSize: 10,
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              cursor: answer.trim() ? 'pointer' : 'default',
-              fontFamily: 'var(--font)',
-              transition: 'all 0.2s',
-            }}
-          >
-            Ответить
-          </button>
-        </div>
-      ) : (
-        <div>
-          <div style={{ background: 'rgba(180,150,63,0.06)', border: '1px solid rgba(180,150,63,0.2)', padding: '1rem 1.25rem', marginBottom: '1rem' }}>
-            <div style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: 8 }}>Ваш ответ</div>
-            <div style={{ fontSize: 14, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.6 }}>{answer}</div>
-          </div>
-          <MacNatalComment text="Честный ответ — редкость. Спасибо за него." />
-        </div>
-      )}
-    </CardShell>
+    <div>
+      <Label pts={POINTS.question}>Вопрос клуба</Label>
+      <div style={{ fontSize:'clamp(18px,2.5vw,24px)', fontWeight:200, color:'#f0ebe0', lineHeight:1.4, marginBottom:'2rem' }}>{question}</div>
+      {!submitted
+        ? <>
+            <textarea value={answer} onChange={e => setAnswer(e.target.value)} placeholder="Ваш ответ..." style={{ width:'100%', minHeight:120, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', padding:'1rem', fontSize:14, fontWeight:300, color:'#f0ebe0', fontFamily:'var(--font)', resize:'vertical', lineHeight:1.6, marginBottom:'1rem' }} />
+            <button onClick={submit} disabled={!answer.trim()} style={{ background: answer.trim() ? '#c8a84b' : 'rgba(200,168,75,0.15)', color: answer.trim() ? '#0e0e0e' : 'rgba(200,168,75,0.3)', border:'none', padding:'12px 24px', fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', cursor: answer.trim() ? 'pointer' : 'default', fontFamily:'var(--font)', marginBottom:'1.5rem' }}>Ответить</button>
+          </>
+        : <>
+            <div style={{ background:'rgba(200,168,75,0.05)', border:'1px solid rgba(200,168,75,0.2)', padding:'1rem 1.25rem', marginBottom:'1rem' }}>
+              <div style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase', marginBottom:6 }}>Ваш ответ</div>
+              <div style={{ fontSize:14, fontWeight:300, color:'rgba(255,255,255,0.7)', lineHeight:1.6 }}>{answer}</div>
+            </div>
+            <MacNatal text="Честный ответ — редкость. Спасибо за него." />
+            <div style={{ marginTop:'1.5rem' }}><Btn onClick={onNext}>Далее</Btn></div>
+          </>
+      }
+    </div>
   )
 }
 
-function GameCard({ day, onNext }) {
+function GameCard({ day, onNext, onPoints }) {
   const game = GAMES[day - 1]
   const saved = getAnswerForDay(day, 'game')
   const [chosen, setChosen] = useState(saved)
-  const [revealed, setRevealed] = useState(!!saved)
+  const [revealed, setRevealed] = useState(saved !== null)
 
-  function handleAnswer(ans) {
+  function pick(val) {
     if (revealed) return
-    setChosen(ans)
+    setChosen(val)
     setRevealed(true)
-    saveAnswer(day, 'game', ans)
-    addPoints(CARD_POINTS.game)
+    saveAnswer(day, 'game', val ? 'true' : 'false')
+    onPoints(POINTS.game)
   }
 
-  const isCorrect = game.type === 'truth'
-    ? chosen === game.answer
-    : chosen === game.answer
+  const userCorrect = revealed && chosen === game.truth
 
   return (
-    <CardShell label="Мини-игра" points={CARD_POINTS.game} onNext={onNext} disabled={!revealed}>
-      <div style={{ fontSize: 'clamp(18px, 2.5vw, 22px)', fontWeight: 200, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: '2rem' }}>
-        {game.question}
+    <div>
+      <Label pts={POINTS.game}>Миф или легенда?</Label>
+      <div style={{ fontSize:'clamp(17px,2.5vw,22px)', fontWeight:200, color:'#f0ebe0', lineHeight:1.5, marginBottom:'2rem' }}>{game.statement}</div>
+
+      <div style={{ display:'flex', gap:12, marginBottom:'1.5rem' }}>
+        {[{label:'Правда', val:true},{label:'Миф',val:false}].map(({label,val}) => {
+          const isCorrect = revealed && val === game.truth
+          const isWrong = revealed && chosen === val && val !== game.truth
+          return (
+            <button key={label} onClick={() => pick(val)} style={{
+              flex:1, padding:'16px', border:`1px solid ${isCorrect ? '#1d9e75' : isWrong ? 'rgba(220,80,80,0.5)' : 'rgba(255,255,255,0.12)'}`,
+              background: isCorrect ? 'rgba(29,158,117,0.1)' : isWrong ? 'rgba(220,80,80,0.08)' : 'rgba(255,255,255,0.03)',
+              color: isCorrect ? '#1d9e75' : isWrong ? 'rgba(220,80,80,0.8)' : 'rgba(255,255,255,0.7)',
+              fontSize:14, fontWeight:300, cursor: revealed ? 'default' : 'pointer',
+              fontFamily:'var(--font)', transition:'all 0.2s',
+            }}>{label}</button>
+          )
+        })}
       </div>
 
-      {game.type === 'truth' && (
-        <div style={{ display: 'flex', gap: 12 }}>
-          {['Правда', 'Миф'].map((label, i) => {
-            const val = i === 0
-            const isSelected = chosen === val
-            const isRight = revealed && val === game.answer
-            return (
-              <button
-                key={label}
-                onClick={() => handleAnswer(val)}
-                style={{
-                  flex: 1,
-                  padding: '16px',
-                  border: '1px solid ' + (isRight ? 'rgba(74,154,90,0.5)' : isSelected && !isRight ? 'rgba(200,80,80,0.5)' : 'rgba(180,150,63,0.3)'),
-                  background: isRight ? 'rgba(74,154,90,0.08)' : isSelected && !isRight ? 'rgba(200,80,80,0.08)' : 'transparent',
-                  color: isRight ? '#4a9a5a' : isSelected && !isRight ? '#c85050' : 'var(--text-primary)',
-                  fontSize: 13,
-                  fontWeight: 300,
-                  letterSpacing: '0.05em',
-                  cursor: revealed ? 'default' : 'pointer',
-                  fontFamily: 'var(--font)',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      {game.type === 'guess' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {game.options.map(opt => {
-            const isSelected = chosen === opt
-            const isRight = revealed && opt === game.answer
-            return (
-              <button
-                key={opt}
-                onClick={() => handleAnswer(opt)}
-                style={{
-                  padding: '14px',
-                  border: '1px solid ' + (isRight ? 'rgba(74,154,90,0.5)' : isSelected && !isRight ? 'rgba(200,80,80,0.5)' : 'rgba(180,150,63,0.3)'),
-                  background: isRight ? 'rgba(74,154,90,0.08)' : isSelected && !isRight ? 'rgba(200,80,80,0.08)' : 'transparent',
-                  color: isRight ? '#4a9a5a' : isSelected && !isRight ? '#c85050' : 'var(--text-primary)',
-                  fontSize: 13,
-                  fontWeight: 300,
-                  cursor: revealed ? 'default' : 'pointer',
-                  fontFamily: 'var(--font)',
-                  transition: 'all 0.2s',
-                  textAlign: 'left',
-                }}
-              >
-                {opt}
-              </button>
-            )
-          })}
-        </div>
-      )}
-
       {revealed && (
-        <div style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: isCorrect ? 'rgba(74,154,90,0.06)' : 'rgba(180,150,63,0.06)', borderLeft: '2px solid ' + (isCorrect ? '#4a9a5a' : 'var(--gold)') }}>
-          <div style={{ fontSize: 9, letterSpacing: '0.2em', color: isCorrect ? '#4a9a5a' : 'var(--gold)', textTransform: 'uppercase', marginBottom: 6 }}>
-            {isCorrect ? '✓ Верно!' : 'Почти!'}
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            {game.fact || `Правильный ответ: ${game.answer}`}
-          </div>
-        </div>
+        <>
+          {userCorrect && game.truth && game.comment && (
+            <div style={{ padding:'1rem 1.25rem', background:'rgba(29,158,117,0.07)', borderLeft:'2px solid #1d9e75', marginBottom:'1rem' }}>
+              <div style={{ fontSize:9, letterSpacing:'0.2em', color:'#1d9e75', textTransform:'uppercase', marginBottom:6 }}>✓ Правда!</div>
+              <div style={{ fontSize:13, fontWeight:300, color:'rgba(255,255,255,0.6)', lineHeight:1.6 }}>{game.comment}</div>
+            </div>
+          )}
+          {!userCorrect && (
+            <div style={{ padding:'1rem 1.25rem', background:'rgba(200,168,75,0.05)', borderLeft:'2px solid rgba(200,168,75,0.4)', marginBottom:'1rem' }}>
+              <div style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase', marginBottom:6 }}>Это миф!</div>
+              <div style={{ fontSize:13, fontWeight:300, color:'rgba(255,255,255,0.5)', lineHeight:1.6 }}>Клуб благодарит за участие.</div>
+            </div>
+          )}
+          <MacNatal text="В этом клубе важно участие, а не результат." />
+          <div style={{ marginTop:'1.5rem' }}><Btn onClick={onNext}>Далее</Btn></div>
+        </>
       )}
-
-      {revealed && <MacNatalComment text="В этом клубе важно участие, а не результат." />}
-    </CardShell>
+    </div>
   )
 }
 
-function WisdomCard({ day, onNext }) {
+function WisdomCard({ day, onNext, onPoints }) {
   const wisdom = WISDOM[day - 1]
-  const saved = getAnswerForDay(day, 'wisdom')
+  const done = getAnswerForDay(day, 'wisdom')
 
-  function handleNext() {
-    if (!saved) {
-      saveAnswer(day, 'wisdom', true)
-      addPoints(CARD_POINTS.wisdom)
-    }
+  function handle() {
+    if (!done) { saveAnswer(day, 'wisdom', true); onPoints(POINTS.wisdom) }
     onNext()
   }
 
   return (
-    <CardShell label="Мудрость клуба" points={CARD_POINTS.wisdom} onNext={handleNext} nextLabel="Принято, далее">
-      <div style={{ padding: '2rem', background: 'var(--dark)', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 200, color: '#f5f0e8', lineHeight: 1.5, marginBottom: '1.5rem', letterSpacing: '-0.01em' }}>
-          «{wisdom.text}»
-        </div>
-        <div style={{ fontSize: 10, letterSpacing: '0.2em', color: 'var(--gold)', textTransform: 'uppercase' }}>
-          — {wisdom.author}
-        </div>
+    <div>
+      <Label pts={POINTS.wisdom}>Мудрость клуба</Label>
+      <div style={{ padding:'2rem', background:'rgba(200,168,75,0.05)', border:'1px solid rgba(200,168,75,0.15)', marginBottom:'2rem' }}>
+        <div style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:200, color:'#f0ebe0', lineHeight:1.5, marginBottom:'1.5rem' }}>«{wisdom.text}»</div>
+        <div style={{ fontSize:11, letterSpacing:'0.2em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase' }}>— {wisdom.author}</div>
       </div>
-    </CardShell>
+      <Btn onClick={handle}>Принято, далее</Btn>
+    </div>
   )
 }
 
-function ChallengeCard({ day, onNext, isLast }) {
+function ChallengeCard({ day, onNext, onPoints }) {
   const challenge = CHALLENGES[day - 1]
   const saved = getAnswerForDay(day, 'challenge')
   const [accepted, setAccepted] = useState(!!saved)
 
-  function handleAccept() {
-    if (!saved) {
-      saveAnswer(day, 'challenge', true)
-      addPoints(CARD_POINTS.challenge)
-    }
+  function accept() {
+    if (!saved) { saveAnswer(day, 'challenge', true); onPoints(POINTS.challenge) }
     setAccepted(true)
   }
 
   return (
-    <CardShell label="Челлендж дня" points={CARD_POINTS.challenge} onNext={onNext} nextLabel={isLast ? 'Завершить день' : 'Далее'} disabled={!accepted}>
-      <div style={{ fontSize: 'clamp(18px, 2.5vw, 24px)', fontWeight: 200, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: '2rem', letterSpacing: '-0.01em' }}>
-        {challenge}
-      </div>
-
-      {!accepted ? (
-        <button
-          onClick={handleAccept}
-          style={{
-            background: 'var(--gold)',
-            border: 'none',
-            color: 'var(--dark)',
-            padding: '14px 28px',
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            fontFamily: 'var(--font)',
-          }}
-        >
-          Принять челлендж
-        </button>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'rgba(74,154,90,0.06)', borderLeft: '2px solid #4a9a5a' }}>
-          <span style={{ fontSize: 9, letterSpacing: '0.2em', color: '#4a9a5a', textTransform: 'uppercase' }}>✓ Челлендж принят</span>
-        </div>
-      )}
-
-      {accepted && <MacNatalComment text="Маленькие действия — основа большой жизни." />}
-    </CardShell>
-  )
-}
-
-function MacNatalComment({ text }) {
-  return (
-    <div style={{ marginTop: '1.5rem', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-      <div style={{ width: 32, height: 32, background: 'var(--dark)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 500 }}>МН</span>
-      </div>
-      <div style={{ background: 'rgba(180,150,63,0.06)', border: '1px solid rgba(180,150,63,0.15)', padding: '10px 14px', flex: 1 }}>
-        <div style={{ fontSize: 9, letterSpacing: '0.15em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: 6 }}>Мак Натал</div>
-        <div style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{text}</div>
-      </div>
+    <div>
+      <Label pts={POINTS.challenge}>Челлендж дня</Label>
+      <div style={{ fontSize:'clamp(18px,2.5vw,24px)', fontWeight:200, color:'#f0ebe0', lineHeight:1.5, marginBottom:'2rem' }}>{challenge}</div>
+      {!accepted
+        ? <button onClick={accept} style={{ background:'#c8a84b', border:'none', color:'#0e0e0e', padding:'16px 32px', fontSize:12, fontWeight:600, letterSpacing:'0.2em', textTransform:'uppercase', cursor:'pointer', fontFamily:'var(--font)' }}>Принять челлендж</button>
+        : <>
+            <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background:'rgba(29,158,117,0.07)', borderLeft:'2px solid #1d9e75', marginBottom:'1.5rem' }}>
+              <span style={{ fontSize:10, letterSpacing:'0.2em', color:'#1d9e75', textTransform:'uppercase' }}>✓ Челлендж принят</span>
+            </div>
+            <MacNatal text="Маленькие действия — основа большой жизни." />
+            <div style={{ marginTop:'1.5rem' }}><Btn onClick={onNext}>Завершить день</Btn></div>
+          </>
+      }
     </div>
   )
 }
