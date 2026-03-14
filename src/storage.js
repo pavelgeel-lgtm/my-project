@@ -4,7 +4,6 @@ const KEY_POINTS = 'club50_points'
 const KEY_COMPLETED = 'club50_completed_days'
 const KEY_GAME_ORDER = 'club50_game_order'
 
-// Текущее время в МСК (UTC+3)
 function nowMSK() {
   const now = new Date()
   return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000)
@@ -27,30 +26,19 @@ export function isActivated() {
 export function getCurrentDay() {
   const activatedAt = getActivatedAt()
   if (!activatedAt) return 0
-
   const msk = nowMSK()
-
-  // Дата активации в МСК
   const activationMsk = new Date(activatedAt + (new Date(activatedAt).getTimezoneOffset() + 180) * 60000)
-  const activationDateOnly = new Date(activationMsk)
-  activationDateOnly.setHours(0, 0, 0, 0)
-
-  // Сегодня в МСК (только дата)
+  const activationDate = new Date(activationMsk)
+  activationDate.setHours(0, 0, 0, 0)
   const todayMsk = new Date(msk)
   todayMsk.setHours(0, 0, 0, 0)
-
-  const daysElapsed = Math.floor((todayMsk - activationDateOnly) / 86400000)
+  const daysElapsed = Math.floor((todayMsk - activationDate) / 86400000)
   const hour = msk.getHours()
-
-  // День 1 = день активации, всегда открыт
-  // День N открывается в 7:00 МСК на N-й день после активации
   let day = daysElapsed + 1
   if (daysElapsed > 0 && hour < 7) day = daysElapsed
-
   return Math.min(Math.max(day, 1), 21)
 }
 
-// Миллисекунды до 7:00 МСК следующего дня
 export function getMsUntilNextDay() {
   const msk = nowMSK()
   const next = new Date(msk)
@@ -117,7 +105,7 @@ export function isDayCompleted(day) {
 export function getGameOrder() {
   const stored = localStorage.getItem(KEY_GAME_ORDER)
   if (stored) return JSON.parse(stored)
-  const order = Array.from({length: 21}, (_, i) => i)
+  const order = Array.from({ length: 21 }, (_, i) => i)
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]]

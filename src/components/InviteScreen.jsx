@@ -8,18 +8,8 @@ const STEPS = [
   'Доступ разрешён',
 ]
 
-function Modal({ children }) {
-  return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'2rem' }}>
-      <div style={{ background:'#161616', border:'1px solid rgba(200,168,75,0.25)', padding:'3rem 2.5rem', maxWidth:420, width:'100%', textAlign:'center' }}>
-        {children}
-      </div>
-    </div>
-  )
-}
-
 export default function InviteScreen({ onActivated }) {
-  const [phase, setPhase] = useState('idle') // idle | checking | done
+  const [phase, setPhase] = useState('idle')
   const [activeStep, setActiveStep] = useState(-1)
   const [doneSteps, setDoneSteps] = useState([])
 
@@ -33,7 +23,7 @@ export default function InviteScreen({ onActivated }) {
       }, i * 900)
     })
     setTimeout(() => {
-      setDoneSteps([0,1,2,3])
+      setDoneSteps([0, 1, 2, 3])
       setActiveStep(-1)
       setPhase('done')
       activate()
@@ -45,7 +35,6 @@ export default function InviteScreen({ onActivated }) {
     <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', flexDirection:'column', fontFamily:'var(--font)', position:'relative', overflow:'hidden', color:'#f0ebe0' }}>
       <div style={{ position:'absolute', inset:0, backgroundImage:'repeating-linear-gradient(0deg,rgba(255,255,255,0.012) 0px,rgba(255,255,255,0.012) 1px,transparent 1px,transparent 3px)', pointerEvents:'none' }} />
 
-      {/* Top bar */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.5rem 2.5rem', borderBottom:'1px solid rgba(255,255,255,0.07)', position:'relative', zIndex:2, flexWrap:'wrap', gap:12 }}>
         <div style={{ display:'flex', alignItems:'center', gap:14 }}>
           <div style={{ width:10, height:10, background:'#c8a84b', transform:'rotate(45deg)', flexShrink:0 }} />
@@ -57,7 +46,6 @@ export default function InviteScreen({ onActivated }) {
         </div>
       </div>
 
-      {/* Main */}
       <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'3rem 2rem', position:'relative', zIndex:2 }}>
         <div style={{ maxWidth:480, width:'100%' }}>
           <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:'2.5rem' }}>
@@ -78,7 +66,7 @@ export default function InviteScreen({ onActivated }) {
 
           <button onClick={handleActivate} disabled={phase !== 'idle'} style={{
             width:'100%', background: phase === 'idle' ? '#c8a84b' : 'rgba(200,168,75,0.2)',
-            border:'none', color: phase === 'idle' ? '#0e0e0e' : 'rgba(200,168,75,0.3)',
+            border:'none', color: phase === 'idle' ? '#0e0e0e' : 'rgba(200,168,75,0.4)',
             fontSize:13, fontWeight:600, letterSpacing:'0.2em', textTransform:'uppercase',
             padding:'20px 28px', cursor: phase === 'idle' ? 'pointer' : 'default',
             display:'flex', alignItems:'center', justifyContent:'space-between', fontFamily:'var(--font)',
@@ -98,32 +86,33 @@ export default function InviteScreen({ onActivated }) {
         </div>
       </div>
 
-      {/* Modal with access check animation */}
       {phase !== 'idle' && (
-        <Modal>
-          <div style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'center', marginBottom:'2rem' }}>
-            <div style={{ width:8, height:8, background:'#c8a84b', transform:'rotate(45deg)' }} />
-            <span style={{ fontSize:10, letterSpacing:'0.28em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase' }}>Система проверки</span>
-          </div>
-          {STEPS.map((step, i) => {
-            const isDone = doneSteps.includes(i)
-            const isActive = activeStep === i
-            return (
-              <div key={i} style={{ display:'flex', alignItems:'center', gap:14, padding:'8px 0', borderBottom: i < STEPS.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                <div style={{ width:18, height:18, borderRadius:'50%', border:`1px solid ${isDone ? '#1d9e75' : isActive ? '#c8a84b' : 'rgba(255,255,255,0.15)'}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.3s' }}>
-                  <div style={{ width:6, height:6, borderRadius:'50%', background: isDone ? '#1d9e75' : isActive ? '#c8a84b' : 'rgba(255,255,255,0.1)', transition:'all 0.3s' }} />
-                </div>
-                <span style={{ fontSize:13, fontWeight:300, color: isDone ? '#1d9e75' : isActive ? '#f0ebe0' : 'rgba(255,255,255,0.2)', transition:'color 0.3s', textAlign:'left' }}>{step}</span>
-                {isDone && <span style={{ marginLeft:'auto', fontSize:12, color:'#1d9e75' }}>✓</span>}
-              </div>
-            )
-          })}
-          {phase === 'done' && (
-            <div style={{ marginTop:'1.5rem', padding:'12px 20px', background:'rgba(29,158,117,0.08)', border:'1px solid rgba(29,158,117,0.3)' }}>
-              <span style={{ fontSize:13, fontWeight:300, color:'#1d9e75' }}>Добро пожаловать в клуб, Максим Владимирович</span>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'2rem' }}>
+          <div style={{ background:'#161616', border:'1px solid rgba(200,168,75,0.25)', padding:'3rem 2.5rem', maxWidth:420, width:'100%' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'center', marginBottom:'2rem' }}>
+              <div style={{ width:8, height:8, background:'#c8a84b', transform:'rotate(45deg)' }} />
+              <span style={{ fontSize:10, letterSpacing:'0.28em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase' }}>Система проверки</span>
             </div>
-          )}
-        </Modal>
+            {STEPS.map((step, i) => {
+              const isDone = doneSteps.includes(i)
+              const isActive = activeStep === i
+              return (
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:14, padding:'10px 0', borderBottom: i < STEPS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                  <div style={{ width:18, height:18, borderRadius:'50%', border:`1px solid ${isDone ? '#1d9e75' : isActive ? '#c8a84b' : 'rgba(255,255,255,0.15)'}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.3s' }}>
+                    <div style={{ width:6, height:6, borderRadius:'50%', background: isDone ? '#1d9e75' : isActive ? '#c8a84b' : 'rgba(255,255,255,0.1)', transition:'all 0.3s' }} />
+                  </div>
+                  <span style={{ fontSize:14, fontWeight:300, color: isDone ? '#1d9e75' : isActive ? '#f0ebe0' : 'rgba(255,255,255,0.2)', transition:'color 0.3s' }}>{step}</span>
+                  {isDone && <span style={{ marginLeft:'auto', color:'#1d9e75', fontSize:14 }}>✓</span>}
+                </div>
+              )
+            })}
+            {phase === 'done' && (
+              <div style={{ marginTop:'1.5rem', padding:'14px 20px', background:'rgba(29,158,117,0.08)', border:'1px solid rgba(29,158,117,0.3)', textAlign:'center' }}>
+                <span style={{ fontSize:14, fontWeight:300, color:'#1d9e75' }}>Добро пожаловать в клуб, Максим Владимирович</span>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

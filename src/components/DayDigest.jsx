@@ -16,11 +16,11 @@ function TopBar({ day, points, onBack, onChat }) {
       </div>
       <div style={{ display:'flex', alignItems:'center', gap:12 }}>
         <div style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 14px', background:'rgba(200,168,75,0.08)', border:'1px solid rgba(200,168,75,0.2)' }}>
-          <div style={{ width:5, height:5, background:'#c8a84b', transform:'rotate(45deg)' }} />
+          <div style={{ width:5, height:5, background:'#c8a84b', transform:'rotate(45deg)', flexShrink:0 }} />
           <span style={{ fontSize:13, fontWeight:300, color:'#c8a84b' }}>{points} очков</span>
         </div>
         <button onClick={onChat} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(200,168,75,0.1)', border:'1px solid rgba(200,168,75,0.25)', color:'#c8a84b', padding:'8px 16px', fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', cursor:'pointer', fontFamily:'var(--font)' }}>
-          <div style={{ width:6, height:6, background:'#c8a84b', transform:'rotate(45deg)' }} />
+          <div style={{ width:6, height:6, background:'#c8a84b', transform:'rotate(45deg)', flexShrink:0 }} />
           Мак Натал
         </button>
       </div>
@@ -44,13 +44,7 @@ function PointsToast({ pts, visible }) {
       animation:'ptsAnim 1.8s ease forwards',
     }}>
       +{pts} очков
-      <style>{`
-        @keyframes ptsAnim {
-          0%   { opacity:1; transform:translate(-50%,-50%) }
-          60%  { opacity:1; transform:translate(-50%,-60%) }
-          100% { opacity:0; transform:translate(-50%,-75%) }
-        }
-      `}</style>
+      <style>{`@keyframes ptsAnim { 0%{opacity:1;transform:translate(-50%,-50%)} 60%{opacity:1;transform:translate(-50%,-60%)} 100%{opacity:0;transform:translate(-50%,-75%)} }`}</style>
     </div>
   )
 }
@@ -64,7 +58,7 @@ function DayCompleteToast({ visible }) {
       backdropFilter:'blur(10px)',
       WebkitBackdropFilter:'blur(10px)',
       color:'#fff',
-      padding:'22px 44px', zIndex:1000, pointerEvents:'none',
+      padding:'24px 44px', zIndex:1000, pointerEvents:'none',
       textAlign:'center', maxWidth:300, width:'88%',
       opacity: visible ? 1 : 0,
       transition:'opacity 0.4s ease, transform 0.4s ease',
@@ -104,14 +98,7 @@ export default function DayDigest({ day, onBack, onOpenChat }) {
   return (
     <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', flexDirection:'column', color:'#f0ebe0' }}>
       <PointsToast pts={lastPts} visible={showPts} />
-        <div style={{ fontSize:36, fontWeight:200, letterSpacing:'-0.02em', lineHeight:1 }}>+{lastPts}</div>
-        <div style={{ fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase', opacity:0.65, marginTop:6 }}>очков клуба</div>
-      </Toast>
       <DayCompleteToast visible={showComplete} />
-        <div style={{ fontSize:20, fontWeight:200, marginBottom:6 }}>День завершён</div>
-        <div style={{ fontSize:13, fontWeight:300, opacity:0.8, letterSpacing:'0.04em' }}>Отличная работа, Максим</div>
-      </Toast>
-
       <TopBar day={day} points={points} onBack={onBack} onChat={onOpenChat} />
 
       <div style={{ padding:'clamp(1.5rem,4vw,2.5rem)' }}>
@@ -284,7 +271,8 @@ function GameCard({ day, onNext, onPoints }) {
               border:`1px solid ${isCorrect ? '#1d9e75' : isWrong ? 'rgba(220,80,80,0.5)' : 'rgba(255,255,255,0.12)'}`,
               background: isCorrect ? 'rgba(29,158,117,0.1)' : isWrong ? 'rgba(220,80,80,0.08)' : 'rgba(255,255,255,0.03)',
               color: isCorrect ? '#1d9e75' : isWrong ? 'rgba(220,80,80,0.8)' : 'rgba(255,255,255,0.7)',
-              fontSize:14, fontWeight:300, cursor: revealed ? 'default' : 'pointer', fontFamily:'var(--font)', transition:'all 0.2s',
+              fontSize:14, fontWeight:300, cursor: revealed ? 'default' : 'pointer',
+              fontFamily:'var(--font)', transition:'all 0.2s',
             }}>{label}</button>
           )
         })}
@@ -298,7 +286,7 @@ function GameCard({ day, onNext, onPoints }) {
               <div style={{ fontSize:13, fontWeight:300, color:'rgba(255,255,255,0.6)', lineHeight:1.6 }}>{game.comment}</div>
             </div>
           )}
-          {(!game.truth || chosen !== true) && (
+          {!(game.truth && chosen === true) && (
             <div style={{ padding:'1rem 1.25rem', background:'rgba(200,168,75,0.05)', borderLeft:'2px solid rgba(200,168,75,0.4)', marginBottom:'1rem' }}>
               <div style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase', marginBottom:6 }}>
                 {game.truth ? 'Это правда!' : 'Это миф!'}

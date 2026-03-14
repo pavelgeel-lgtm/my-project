@@ -9,43 +9,17 @@ function formatCountdown(ms) {
   return [h, m, s].map(n => String(n).padStart(2, '0')).join(':')
 }
 
-function TopBar({ points, onOpenChat }) {
-  return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.2rem 2rem', borderBottom:'1px solid rgba(255,255,255,0.07)', flexWrap:'wrap', gap:12 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-        <div style={{ width:8, height:8, background:'#c8a84b', transform:'rotate(45deg)' }} />
-        <span style={{ fontSize:11, fontWeight:300, letterSpacing:'0.25em', color:'rgba(255,255,255,0.35)', textTransform:'uppercase' }}>Секретный клуб · 50 уровня жизни</span>
-      </div>
-      <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-        {/* Points tracker */}
-        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 14px', background:'rgba(200,168,75,0.08)', border:'1px solid rgba(200,168,75,0.2)' }}>
-          <div style={{ width:5, height:5, background:'#c8a84b', transform:'rotate(45deg)' }} />
-          <span style={{ fontSize:13, fontWeight:300, color:'#c8a84b', letterSpacing:'0.05em' }}>{points} очков</span>
-        </div>
-        <button onClick={onOpenChat} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(200,168,75,0.1)', border:'1px solid rgba(200,168,75,0.25)', color:'#c8a84b', padding:'8px 16px', fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', cursor:'pointer', fontFamily:'var(--font)', transition:'all 0.2s' }}
-          onMouseEnter={e => e.currentTarget.style.background='rgba(200,168,75,0.18)'}
-          onMouseLeave={e => e.currentTarget.style.background='rgba(200,168,75,0.1)'}
-        >
-          <div style={{ width:6, height:6, background:'#c8a84b', transform:'rotate(45deg)' }} />
-          Мак Натал
-        </button>
-      </div>
-    </div>
-  )
-}
-
 export default function Dashboard({ onOpenDay, onOpenArchive, onOpenChat }) {
   const [currentDay, setCurrentDay] = useState(getCurrentDay())
   const [points, setPoints] = useState(getPoints())
   const [completedDays, setCompletedDays] = useState(getCompletedDays())
   const [countdown, setCountdown] = useState(getMsUntilNextDay())
-  const [nextDayReady, setNextDayReady] = useState(false)
+  const [nextDayReady, setNextDayReady] = useState(getMsUntilNextDay() <= 0)
 
   useEffect(() => {
     const t = setInterval(() => {
-      const newDay = getCurrentDay()
       const ms = getMsUntilNextDay()
-      setCurrentDay(newDay)
+      setCurrentDay(getCurrentDay())
       setPoints(getPoints())
       setCompletedDays(getCompletedDays())
       setCountdown(ms)
@@ -60,12 +34,34 @@ export default function Dashboard({ onOpenDay, onOpenArchive, onOpenChat }) {
 
   return (
     <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', flexDirection:'column', color:'#f0ebe0' }}>
-      <TopBar points={points} onOpenChat={onOpenChat} />
+
+      {/* Top bar */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.2rem 2rem', borderBottom:'1px solid rgba(255,255,255,0.07)', flexWrap:'wrap', gap:12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:8, height:8, background:'#c8a84b', transform:'rotate(45deg)', flexShrink:0 }} />
+          <span style={{ fontSize:11, fontWeight:300, letterSpacing:'0.25em', color:'rgba(255,255,255,0.35)', textTransform:'uppercase' }}>Секретный клуб · 50 уровня жизни</span>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 14px', background:'rgba(200,168,75,0.08)', border:'1px solid rgba(200,168,75,0.2)' }}>
+            <div style={{ width:5, height:5, background:'#c8a84b', transform:'rotate(45deg)', flexShrink:0 }} />
+            <span style={{ fontSize:13, fontWeight:300, color:'#c8a84b' }}>{points} очков</span>
+          </div>
+          <button onClick={onOpenChat} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(200,168,75,0.1)', border:'1px solid rgba(200,168,75,0.25)', color:'#c8a84b', padding:'8px 16px', fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', cursor:'pointer', fontFamily:'var(--font)', transition:'all 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(200,168,75,0.18)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(200,168,75,0.1)'}
+          >
+            <div style={{ width:6, height:6, background:'#c8a84b', transform:'rotate(45deg)', flexShrink:0 }} />
+            Мак Натал
+          </button>
+        </div>
+      </div>
 
       <div style={{ flex:1, padding:'clamp(1.5rem,4vw,2.5rem)' }}>
+
+        {/* Welcome */}
         <div style={{ marginBottom:'2rem' }}>
           <div style={{ fontSize:10, letterSpacing:'0.25em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase', marginBottom:8 }}>Добро пожаловать</div>
-          <div style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:200, color:'#f0ebe0', letterSpacing:'-0.02em' }}>Максим Владимирович</div>
+          <div style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:200, letterSpacing:'-0.02em' }}>Максим Владимирович</div>
         </div>
 
         {/* Stats */}
@@ -93,7 +89,7 @@ export default function Dashboard({ onOpenDay, onOpenArchive, onOpenChat }) {
           </div>
         </div>
 
-        {/* Today */}
+        {/* Today's digest */}
         <div style={{ marginBottom:'1.5rem' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1rem', flexWrap:'wrap', gap:8 }}>
             <span style={{ fontSize:10, letterSpacing:'0.22em', color:'rgba(255,255,255,0.3)', textTransform:'uppercase' }}>День {currentDay} — Дайджест</span>
@@ -105,7 +101,10 @@ export default function Dashboard({ onOpenDay, onOpenArchive, onOpenChat }) {
             color:'#f0ebe0', padding:'1.5rem 2rem', cursor:'pointer',
             display:'flex', alignItems:'center', justifyContent:'space-between',
             fontFamily:'var(--font)', transition:'all 0.2s',
-          }}>
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = todayCompleted ? 'rgba(29,158,117,0.1)' : 'rgba(200,168,75,0.12)'}
+            onMouseLeave={e => e.currentTarget.style.background = todayCompleted ? 'rgba(29,158,117,0.06)' : 'rgba(200,168,75,0.08)'}
+          >
             <div style={{ textAlign:'left' }}>
               <div style={{ fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:6 }}>
                 {todayCompleted ? 'Просмотреть ещё раз' : 'Открыть дайджест'}
@@ -116,22 +115,25 @@ export default function Dashboard({ onOpenDay, onOpenArchive, onOpenChat }) {
           </button>
         </div>
 
-        {/* Timer / Next day */}
+        {/* Next day timer or button */}
         {todayCompleted && currentDay < 21 && (
           <div style={{ marginBottom:'1.5rem' }}>
             {nextDayReady ? (
               <button onClick={() => onOpenDay(nextDay)} style={{
                 width:'100%', background:'#c8a84b', border:'none', color:'#0e0e0e',
                 padding:'1.25rem 1.5rem', display:'flex', alignItems:'center', justifyContent:'space-between',
-                cursor:'pointer', fontFamily:'var(--font)', fontSize:13, fontWeight:600, letterSpacing:'0.15em', textTransform:'uppercase',
-              }}>
+                cursor:'pointer', fontFamily:'var(--font)', fontSize:12, fontWeight:600, letterSpacing:'0.18em', textTransform:'uppercase', transition:'all 0.2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = '#dfc060'}
+                onMouseLeave={e => e.currentTarget.style.background = '#c8a84b'}
+              >
                 <span>Открыть день {nextDay}</span>
                 <span style={{ fontSize:18 }}>→</span>
               </button>
             ) : (
               <div style={{ background:'rgba(200,168,75,0.05)', border:'1px solid rgba(200,168,75,0.15)', padding:'1.25rem 1.5rem', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 }}>
                 <span style={{ fontSize:10, letterSpacing:'0.2em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase' }}>День {nextDay} откроется в 7:00 МСК</span>
-                <span style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:200, color:'#f0ebe0', fontVariantNumeric:'tabular-nums' }}>{formatCountdown(countdown)}</span>
+                <span style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:200, fontVariantNumeric:'tabular-nums' }}>{formatCountdown(countdown)}</span>
               </div>
             )}
           </div>
@@ -144,8 +146,8 @@ export default function Dashboard({ onOpenDay, onOpenArchive, onOpenChat }) {
           fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase',
           cursor:'pointer', fontFamily:'var(--font)', width:'100%', transition:'all 0.2s',
         }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(200,168,75,0.3)'; e.currentTarget.style.color='#c8a84b' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='rgba(255,255,255,0.4)' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,168,75,0.3)'; e.currentTarget.style.color = '#c8a84b' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
         >
           Архив клуба — {completedDays.length} из 21 дней
         </button>

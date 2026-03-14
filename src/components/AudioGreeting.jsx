@@ -22,21 +22,21 @@ export default function AudioGreeting({ onDone }) {
   return (
     <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'2rem', color:'#f0ebe0', fontFamily:'var(--font)', position:'relative' }}>
 
-      {/* Toast */}
       <div style={{
         position:'fixed', top:'50%', left:'50%',
         transform: showToast ? 'translate(-50%,-50%)' : 'translate(-50%,-58%)',
-        background:'rgba(200,168,75,0.85)',
-        backdropFilter:'blur(12px)',
-        WebkitBackdropFilter:'blur(12px)',
-        color:'#0e0e0e', padding:'22px 40px',
+        background:'rgba(14,14,14,0.75)',
+        backdropFilter:'blur(16px)',
+        WebkitBackdropFilter:'blur(16px)',
+        border:'1px solid rgba(200,168,75,0.3)',
+        color:'#f0ebe0', padding:'24px 40px',
         zIndex:1000, pointerEvents:'none', textAlign:'center',
-        maxWidth:300, width:'88%',
+        maxWidth:320, width:'88%',
         opacity: showToast ? 1 : 0,
         transition:'opacity 0.4s ease, transform 0.4s ease',
       }}>
-        <div style={{ fontSize:15, fontWeight:400, letterSpacing:'0.04em', marginBottom:4 }}>Приятного пользования,</div>
-        <div style={{ fontSize:20, fontWeight:200, letterSpacing:'0.02em' }}>дорогой Максим</div>
+        <div style={{ fontSize:11, letterSpacing:'0.25em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase', marginBottom:10 }}>Клуб приветствует вас</div>
+        <div style={{ fontSize:18, fontWeight:200, letterSpacing:'0.02em' }}>Приятного пользования,<br />дорогой Максим</div>
       </div>
 
       <div style={{ maxWidth:480, width:'100%', textAlign:'center' }}>
