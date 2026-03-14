@@ -1,0 +1,42 @@
+:root {
+  --gold: #b4963f;
+  --gold-light: #d4af5f;
+  --gold-pale: rgba(180, 150, 63, 0.15);
+  --cream: #f5f0e8;
+  --cream-dark: #ede8df;
+  --dark: #1a1612;
+  --dark-mid: #2e2820;
+  --text-primary: #1a1612;
+  --text-secondary: #6b6560;
+  --text-muted: #aaa;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  --radius: 4px;
+  --transition: 0.2s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--cream);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+button {
+  font-family: var(--font);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea {
+  font-family: var(--font);
+  outline: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-pale); border-radius: 2px; }
