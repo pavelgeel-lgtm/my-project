@@ -52,9 +52,8 @@ export default function ChatScreen({ onBack }) {
       const res = await fetch('https://shy-sunset-614agrok-proxy.pavelgeel.workers.dev/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          
-        },
+  'Content-Type': 'application/json',
+},
         body: JSON.stringify({
           model: 'grok-beta',
           messages: [
