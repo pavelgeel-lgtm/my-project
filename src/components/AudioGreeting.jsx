@@ -1,13 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
-
-function Toast({ visible }) {
-  if (!visible) return null
-  return (
-    <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'rgba(200,168,75,0.95)', color:'#0e0e0e', padding:'20px 36px', fontSize:16, fontWeight:500, letterSpacing:'0.05em', zIndex:1000, textAlign:'center', maxWidth:320, width:'90%' }}>
-      Приятного пользования, дорогой Максим
-    </div>
-  )
-}
+import React, { useState, useRef } from 'react'
 
 export default function AudioGreeting({ onDone }) {
   const [playing, setPlaying] = useState(false)
@@ -25,18 +16,35 @@ export default function AudioGreeting({ onDone }) {
 
   function handleEnter() {
     setShowToast(true)
-    setTimeout(() => { setShowToast(false); onDone() }, 2000)
+    setTimeout(() => { setShowToast(false); onDone() }, 2200)
   }
 
   return (
-    <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'2rem', color:'#f0ebe0', fontFamily:'var(--font)' }}>
-      <Toast visible={showToast} />
+    <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'2rem', color:'#f0ebe0', fontFamily:'var(--font)', position:'relative' }}>
+
+      {/* Toast */}
+      <div style={{
+        position:'fixed', top:'50%', left:'50%',
+        transform: showToast ? 'translate(-50%,-50%)' : 'translate(-50%,-58%)',
+        background:'rgba(200,168,75,0.85)',
+        backdropFilter:'blur(12px)',
+        WebkitBackdropFilter:'blur(12px)',
+        color:'#0e0e0e', padding:'22px 40px',
+        zIndex:1000, pointerEvents:'none', textAlign:'center',
+        maxWidth:300, width:'88%',
+        opacity: showToast ? 1 : 0,
+        transition:'opacity 0.4s ease, transform 0.4s ease',
+      }}>
+        <div style={{ fontSize:15, fontWeight:400, letterSpacing:'0.04em', marginBottom:4 }}>Приятного пользования,</div>
+        <div style={{ fontSize:20, fontWeight:200, letterSpacing:'0.02em' }}>дорогой Максим</div>
+      </div>
+
       <div style={{ maxWidth:480, width:'100%', textAlign:'center' }}>
         <div style={{ fontSize:9, letterSpacing:'0.3em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase', marginBottom:'3rem' }}>
           Секретный клуб · Добро пожаловать
         </div>
 
-        <div style={{ fontSize:'clamp(26px,5vw,40px)', fontWeight:200, color:'#f0ebe0', lineHeight:1.2, marginBottom:'1rem' }}>
+        <div style={{ fontSize:'clamp(26px,5vw,40px)', fontWeight:200, lineHeight:1.2, marginBottom:'1rem' }}>
           Послушайте видео<br />от Поля и Хелен
         </div>
         <div style={{ fontSize:14, fontWeight:300, color:'rgba(255,255,255,0.35)', letterSpacing:'0.05em', marginBottom:'3rem' }}>

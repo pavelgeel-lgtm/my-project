@@ -28,22 +28,21 @@ function TopBar({ day, points, onBack, onChat }) {
   )
 }
 
-function PointsToast({ pts, visible }) {
-  if (!visible) return null
+function Toast({ visible, children, gold }) {
   return (
-    <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'#c8a84b', color:'#0e0e0e', padding:'20px 40px', fontSize:28, fontWeight:700, zIndex:1000, pointerEvents:'none', letterSpacing:'-0.01em' }}>
-      +{pts} очков
-    </div>
-  )
-}
-
-function DayCompleteToast({ visible }) {
-  if (!visible) return null
-  return (
-    <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'#1d9e75', color:'#fff', padding:'24px 40px', fontSize:18, fontWeight:300, zIndex:1000, pointerEvents:'none', textAlign:'center', letterSpacing:'0.03em', maxWidth:320 }}>
-      <div style={{ fontSize:24, marginBottom:8 }}>✓</div>
-      День завершён, Максим!<br />
-      <span style={{ fontSize:14, opacity:0.8 }}>Отличная работа</span>
+    <div style={{
+      position:'fixed', top:'50%', left:'50%',
+      transform: visible ? 'translate(-50%,-50%)' : 'translate(-50%,-58%)',
+      background: gold ? 'rgba(200,168,75,0.9)' : 'rgba(29,158,117,0.88)',
+      backdropFilter:'blur(10px)',
+      WebkitBackdropFilter:'blur(10px)',
+      color: gold ? '#0e0e0e' : '#fff',
+      padding:'22px 44px', zIndex:1000, pointerEvents:'none',
+      textAlign:'center', maxWidth:300, width:'88%',
+      opacity: visible ? 1 : 0,
+      transition:'opacity 0.4s ease, transform 0.4s ease',
+    }}>
+      {children}
     </div>
   )
 }
@@ -61,7 +60,7 @@ export default function DayDigest({ day, onBack, onOpenChat }) {
     setPoints(parseInt(localStorage.getItem('club50_points') || '0'))
     setLastPts(pts)
     setShowPts(true)
-    setTimeout(() => setShowPts(false), 1500)
+    setTimeout(() => setShowPts(false), 1800)
   }
 
   function goNext() {
@@ -70,14 +69,21 @@ export default function DayDigest({ day, onBack, onOpenChat }) {
     } else {
       markDayCompleted(day)
       setShowComplete(true)
-      setTimeout(() => { setShowComplete(false); onBack() }, 2500)
+      setTimeout(() => { setShowComplete(false); onBack() }, 2800)
     }
   }
 
   return (
     <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', flexDirection:'column', color:'#f0ebe0' }}>
-      <PointsToast pts={lastPts} visible={showPts} />
-      <DayCompleteToast visible={showComplete} />
+      <Toast visible={showPts} gold>
+        <div style={{ fontSize:36, fontWeight:200, letterSpacing:'-0.02em', lineHeight:1 }}>+{lastPts}</div>
+        <div style={{ fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase', opacity:0.65, marginTop:6 }}>очков клуба</div>
+      </Toast>
+      <Toast visible={showComplete} gold={false}>
+        <div style={{ fontSize:20, fontWeight:200, marginBottom:6 }}>День завершён</div>
+        <div style={{ fontSize:13, fontWeight:300, opacity:0.8, letterSpacing:'0.04em' }}>Отличная работа, Максим</div>
+      </Toast>
+
       <TopBar day={day} points={points} onBack={onBack} onChat={onOpenChat} />
 
       <div style={{ padding:'clamp(1.5rem,4vw,2.5rem)' }}>
@@ -145,25 +151,22 @@ function EventCard({ day, onNext, onPoints }) {
     if (!feeling.trim()) return
     saveAnswer(day, 'event_feeling', feeling)
     setSubmitted(true)
-    if (!done) { onPoints(POINTS.event) }
+    if (!done) onPoints(POINTS.event)
   }
-
-  function handleNext() { onNext() }
 
   return (
     <div>
-      <Label pts={POINTS.event}>Событие дня</Label>
+      <Label pts={POINTS.event}>Воспоминание дня</Label>
       {event.photo
         ? <img src={event.photo} alt={event.title} style={{ width:'100%', aspectRatio:'16/9', objectFit:'cover', marginBottom:'1.5rem' }} />
         : <div style={{ width:'100%', height:200, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'1.5rem' }}>
-            <span style={{ fontSize:10, letterSpacing:'0.2em', color:'rgba(255,255,255,0.2)', textTransform:'uppercase' }}>Фото появится здесь</span>
+            <span style={{ fontSize:10, letterSpacing:'0.2em', color:'rgba(255,255,255,0.15)', textTransform:'uppercase' }}>Фото появится здесь</span>
           </div>
       }
       {event.year && <div style={{ fontSize:10, letterSpacing:'0.2em', color:'rgba(255,255,255,0.3)', textTransform:'uppercase', marginBottom:8 }}>{event.year}</div>}
       <div style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:200, color:'#f0ebe0', marginBottom:'1rem' }}>{event.title}</div>
-      <div style={{ fontSize:15, fontWeight:300, color:'rgba(255,255,255,0.6)', lineHeight:1.7, marginBottom:'1.5rem' }}>{event.description}</div>
+      {event.description && <div style={{ fontSize:15, fontWeight:300, color:'rgba(255,255,255,0.6)', lineHeight:1.7, marginBottom:'1.5rem' }}>{event.description}</div>}
 
-      {/* Feeling input */}
       <div style={{ background:'rgba(200,168,75,0.04)', border:'1px solid rgba(200,168,75,0.15)', padding:'1.25rem', marginBottom:'1.5rem' }}>
         <div style={{ fontSize:10, letterSpacing:'0.22em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase', marginBottom:'1rem' }}>
           Какое первое ощущение вызывает это воспоминание?
@@ -180,7 +183,7 @@ function EventCard({ day, onNext, onPoints }) {
       {submitted && (
         <>
           <MacNatal text="Каждый такой момент — часть того, кто вы есть сегодня." />
-          <div style={{ marginTop:'1.5rem' }}><Btn onClick={handleNext}>Далее</Btn></div>
+          <div style={{ marginTop:'1.5rem' }}><Btn onClick={onNext}>Далее</Btn></div>
         </>
       )}
     </div>
@@ -227,7 +230,7 @@ function GameCard({ day, onNext, onPoints }) {
   const gameIndex = order[day - 1]
   const game = GAMES[gameIndex]
   const saved = getAnswerForDay(day, 'game')
-  const [chosen, setChosen] = useState(saved)
+  const [chosen, setChosen] = useState(saved !== null ? saved === 'true' : null)
   const [revealed, setRevealed] = useState(saved !== null)
 
   function pick(val) {
@@ -237,8 +240,6 @@ function GameCard({ day, onNext, onPoints }) {
     saveAnswer(day, 'game', val ? 'true' : 'false')
     onPoints(POINTS.game)
   }
-
-  const userCorrect = revealed && chosen === game.truth
 
   return (
     <div>
@@ -263,13 +264,13 @@ function GameCard({ day, onNext, onPoints }) {
 
       {revealed && (
         <>
-          {userCorrect && game.truth && game.comment && (
+          {game.truth && chosen === true && game.comment && (
             <div style={{ padding:'1rem 1.25rem', background:'rgba(29,158,117,0.07)', borderLeft:'2px solid #1d9e75', marginBottom:'1rem' }}>
               <div style={{ fontSize:9, letterSpacing:'0.2em', color:'#1d9e75', textTransform:'uppercase', marginBottom:6 }}>✓ Правда!</div>
               <div style={{ fontSize:13, fontWeight:300, color:'rgba(255,255,255,0.6)', lineHeight:1.6 }}>{game.comment}</div>
             </div>
           )}
-          {(!userCorrect || (!game.truth && chosen === false)) && (
+          {(!game.truth || chosen !== true) && (
             <div style={{ padding:'1rem 1.25rem', background:'rgba(200,168,75,0.05)', borderLeft:'2px solid rgba(200,168,75,0.4)', marginBottom:'1rem' }}>
               <div style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(200,168,75,0.7)', textTransform:'uppercase', marginBottom:6 }}>
                 {game.truth ? 'Это правда!' : 'Это миф!'}
