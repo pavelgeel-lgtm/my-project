@@ -1,105 +1,77 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+
+function Toast({ visible }) {
+  if (!visible) return null
+  return (
+    <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'rgba(200,168,75,0.95)', color:'#0e0e0e', padding:'20px 36px', fontSize:16, fontWeight:500, letterSpacing:'0.05em', zIndex:1000, textAlign:'center', maxWidth:320, width:'90%' }}>
+      Приятного пользования, дорогой Максим
+    </div>
+  )
+}
 
 export default function AudioGreeting({ onDone }) {
   const [playing, setPlaying] = useState(false)
   const [finished, setFinished] = useState(false)
+  const [showToast, setShowToast] = useState(false)
   const audioRef = useRef(null)
 
   function toggle() {
     if (!audioRef.current) return
-    if (playing) {
-      audioRef.current.pause()
-      setPlaying(false)
-    } else {
-      audioRef.current.play()
-      setPlaying(true)
-    }
+    if (playing) { audioRef.current.pause(); setPlaying(false) }
+    else { audioRef.current.play(); setPlaying(true) }
   }
 
-  function handleEnded() {
-    setPlaying(false)
-    setFinished(true)
+  function handleEnded() { setPlaying(false); setFinished(true) }
+
+  function handleEnter() {
+    setShowToast(true)
+    setTimeout(() => { setShowToast(false); onDone() }, 2000)
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--dark)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem',
-    }}>
-      <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: 9, letterSpacing: '0.3em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '3rem' }}>
+    <div style={{ background:'#0e0e0e', minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'2rem', color:'#f0ebe0', fontFamily:'var(--font)' }}>
+      <Toast visible={showToast} />
+      <div style={{ maxWidth:480, width:'100%', textAlign:'center' }}>
+        <div style={{ fontSize:9, letterSpacing:'0.3em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase', marginBottom:'3rem' }}>
           Секретный клуб · Добро пожаловать
         </div>
 
-        <div style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 200, color: '#f5f0e8', lineHeight: 1.2, marginBottom: '1rem' }}>
-          Послушайте<br />приветствие клуба
+        <div style={{ fontSize:'clamp(26px,5vw,40px)', fontWeight:200, color:'#f0ebe0', lineHeight:1.2, marginBottom:'1rem' }}>
+          Послушайте видео<br />от Поля и Хелен
+        </div>
+        <div style={{ fontSize:14, fontWeight:300, color:'rgba(255,255,255,0.35)', letterSpacing:'0.05em', marginBottom:'3rem' }}>
+          Специальное обращение для Максима Владимировича
         </div>
 
-        <div style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em', marginBottom: '3rem' }}>
-          Специальное обращение для Максима
-        </div>
-
-        {/* Audio player */}
         <audio ref={audioRef} src="assets/audio/greeting.mp3" onEnded={handleEnded} />
 
-        <button
-          onClick={toggle}
-          style={{
-            width: 80, height: 80,
-            borderRadius: '50%',
-            border: '1px solid var(--gold)',
-            background: playing ? 'var(--gold)' : 'transparent',
-            color: playing ? 'var(--dark)' : 'var(--gold)',
-            fontSize: 24,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 2rem',
-            transition: 'all 0.2s',
-            fontFamily: 'var(--font)',
-          }}
-        >
+        <button onClick={toggle} style={{
+          width:80, height:80, borderRadius:'50%',
+          border:'1px solid rgba(200,168,75,0.5)',
+          background: playing ? '#c8a84b' : 'transparent',
+          color: playing ? '#0e0e0e' : '#c8a84b',
+          fontSize:22, cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          margin:'0 auto 1.5rem', transition:'all 0.2s', fontFamily:'var(--font)',
+        }}>
           {playing ? '❚❚' : '▶'}
         </button>
 
-        <div style={{ fontSize: 11, fontWeight: 300, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', marginBottom: '3rem' }}>
+        <div style={{ fontSize:11, fontWeight:300, letterSpacing:'0.15em', color:'rgba(255,255,255,0.25)', textTransform:'uppercase', marginBottom:'3rem' }}>
           {playing ? 'Воспроизведение...' : finished ? 'Прослушано' : 'Нажмите для воспроизведения'}
         </div>
 
-        <button
-          onClick={onDone}
-          style={{
-            background: finished ? 'var(--gold)' : 'transparent',
-            border: '1px solid ' + (finished ? 'var(--gold)' : 'rgba(255,255,255,0.2)'),
-            color: finished ? 'var(--dark)' : 'rgba(255,255,255,0.4)',
-            fontSize: 10,
-            fontWeight: 400,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            padding: '14px 40px',
-            cursor: 'pointer',
-            transition: 'all 0.3s',
-            fontFamily: 'var(--font)',
-          }}
-        >
+        <button onClick={handleEnter} style={{
+          background: finished ? '#c8a84b' : 'rgba(255,255,255,0.06)',
+          border:`1px solid ${finished ? '#c8a84b' : 'rgba(255,255,255,0.12)'}`,
+          color: finished ? '#0e0e0e' : 'rgba(255,255,255,0.4)',
+          fontSize:11, fontWeight: finished ? 600 : 400,
+          letterSpacing:'0.2em', textTransform:'uppercase',
+          padding:'16px 40px', cursor:'pointer',
+          transition:'all 0.3s', fontFamily:'var(--font)',
+        }}>
           Войти в клуб →
         </button>
-
-        {!finished && (
-          <div style={{ marginTop: 16 }}>
-            <button
-              onClick={onDone}
-              style={{ background: 'none', border: 'none', fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'var(--font)' }}
-            >
-              Пропустить
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

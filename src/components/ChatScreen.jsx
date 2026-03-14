@@ -1,17 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { getCurrentDay, getPoints } from '../storage'
+import { getCurrentDay, getPoints, getAnswers, getDayContext } from '../storage'
 
-const GROK_API_KEY = 'YOUR_GROK_API_KEY'
+const GROK_API_KEY = import.meta.env.VITE_GROQ_API_KEY
 
-const SYSTEM = `Ты — Мак Натал, проводник Секретного клуба 50 уровня жизни.
+function buildSystem(day, points, answers) {
+  const todayContext = getDayContext(day)
+  const allContext = Object.entries(answers).map(([d, a]) => {
+    const parts = []
+    if (a.event_feeling) parts.push(`День ${d} — ощущение от воспоминания: "${a.event_feeling}"`)
+    if (a.question) parts.push(`День ${d} — ответ на вопрос: "${a.question}"`)
+    return parts.join('\n')
+  }).filter(Boolean).join('\n')
+
+  return `Ты — Мак Натал, проводник Секретного клуба 50 уровня жизни.
 Ты сопровождаешь Максима Владимировича в его 21-дневном путешествии.
 Твой характер: мудрый, тёплый, немного загадочный. Говоришь коротко и ёмко — максимум 3-4 предложения.
 Ты знаешь Максима лично, обращаешься к нему по имени.
+
+Сейчас день ${day} из 21. Очки Максима: ${points}.
+
+${todayContext ? `Что Максим сделал сегодня:\n${todayContext}` : ''}
+
+${allContext ? `История ответов Максима за все дни:\n${allContext}` : ''}
+
 Правила:
+- Используй ответы и ощущения Максима в разговоре — ссылайся на них, развивай
 - Никогда не раскрывай механику игры, будущие дни или финальный подарок
 - Не говори что ты ИИ — ты Мак Натал
 - Не выходи за рамки клуба, жизни, мудрости
 - Отвечай только на русском языке`
+}
 
 export default function ChatScreen({ onBack }) {
   const day = getCurrentDay()
@@ -33,16 +51,15 @@ export default function ChatScreen({ onBack }) {
     setInput('')
     setLoading(true)
     try {
+      const answers = getAnswers()
+      const system = buildSystem(day, getPoints(), answers)
       const res = await fetch('https://api.x.ai/v1/chat/completions', {
         method:'POST',
         headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${GROK_API_KEY}` },
         body: JSON.stringify({
           model:'grok-3-mini',
-          messages:[
-            { role:'system', content: SYSTEM + `\nСейчас день ${day} из 21. Очки: ${getPoints()}.` },
-            ...messages, userMsg
-          ],
-          max_tokens:300, temperature:0.8,
+          messages:[{ role:'system', content:system }, ...messages, userMsg],
+          max_tokens:400, temperature:0.85,
         })
       })
       const data = await res.json()
@@ -62,7 +79,7 @@ export default function ChatScreen({ onBack }) {
         </div>
         <div>
           <div style={{ fontSize:15, fontWeight:300 }}>Мак Натал</div>
-          <div style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase' }}>Проводник клуба</div>
+          <div style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase' }}>Проводник клуба · День {day}</div>
         </div>
       </div>
 
@@ -76,7 +93,7 @@ export default function ChatScreen({ onBack }) {
           </div>
         ))}
         {loading && (
-          <div style={{ display:'flex', justifyContent:'flex-start' }}>
+          <div style={{ display:'flex' }}>
             <div style={{ padding:'12px 16px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)' }}>
               <div style={{ fontSize:9, letterSpacing:'0.18em', color:'rgba(200,168,75,0.6)', textTransform:'uppercase', marginBottom:6 }}>Мак Натал</div>
               <div style={{ fontSize:14, color:'rgba(255,255,255,0.3)' }}>...</div>
