@@ -101,8 +101,8 @@ export const GAMES = [
 // Плейсхолдеры событий — Лена заменит фото и тексты
 export const EVENTS = Array.from({ length: 21 }, (_, i) => ({
   day: i + 1,
-  title: `Событие дня ${i + 1}`,
+  title: 'Воспоминание',
   year: '',
-  description: 'Фото и история от Лены появятся здесь.',
+  description: '',
   photo: null,
 }))
