@@ -49,51 +49,43 @@ export default function ChatScreen({ onBack }) {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  async function send() {
-    const text = input.trim()
-    if (!text || loading) return
-    const userMsg = { role: 'user', content: text }
-    setMessages(prev => {
-  const updated = [...prev, userMsg]
-  localStorage.setItem('club50_chat_history', JSON.stringify(updated))
-  return updated
-})
-    setInput('')
-    setLoading(true)
-    try {
-      const system = buildSystem(day, getPoints(), getAnswers())
-      const res = await fetch('https://shy-sunset-614agrok-proxy.pavelgeel.workers.dev/', {
-        method: 'POST',
-        headers: {
-  'Content-Type': 'application/json',
-},
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: system },
-            ...messages,
-            userMsg
-          ],
-          max_tokens: 400,
-          temperature: 0.85,
-        })
+async function send() {
+  const text = input.trim()
+  if (!text || loading) return
+  const userMsg = { role: 'user', content: text }
+  const updatedWithUser = [...messages, userMsg]
+  setMessages(updatedWithUser)
+  localStorage.setItem('club50_chat_history', JSON.stringify(updatedWithUser))
+  setInput('')
+  setLoading(true)
+  try {
+    const system = buildSystem(day, getPoints(), getAnswers())
+    const res = await fetch('https://shy-sunset-614agrok-proxy.pavelgeel.workers.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: system },
+          ...updatedWithUser
+        ],
+        max_tokens: 400,
+        temperature: 0.85,
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      const reply = data.choices?.[0]?.message?.content || 'Подождите немного, Максим...'
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-      setMessages(prev => {
-  const updated = [...prev, { role: 'assistant', content: reply }]
-  localStorage.setItem('club50_chat_history', JSON.stringify(updated))
-  return updated
-})
-    } catch (e) {
-      console.error('Grok error:', e)
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Связь прервана. Попробуйте снова.' }])
-    } finally {
-      setLoading(false)
-    }
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    const reply = data.choices?.[0]?.message?.content || 'Подождите немного, Максим...'
+    const updatedWithReply = [...updatedWithUser, { role: 'assistant', content: reply }]
+    setMessages(updatedWithReply)
+    localStorage.setItem('club50_chat_history', JSON.stringify(updatedWithReply))
+  } catch (e) {
+    console.error('error:', e)
+    setMessages(prev => [...prev, { role: 'assistant', content: 'Связь прервана. Попробуйте снова.' }])
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div style={{ background: '#0e0e0e', minHeight: '100vh', display: 'flex', flexDirection: 'column', color: '#f0ebe0' }}>
