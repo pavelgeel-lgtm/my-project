@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react'
 
 export default function AudioGreeting({ onDone }) {
   const [playing, setPlaying] = useState(false)
-  const [finished, setFinished] = useState(false)
+const [finished, setFinished] = useState(false)
+const [watched, setWatched] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const audioRef = useRef(null)
 
@@ -12,7 +13,7 @@ export default function AudioGreeting({ onDone }) {
     else { audioRef.current.play(); setPlaying(true) }
   }
 
-  function handleEnded() { setPlaying(false); setFinished(true) }
+  function handleEnded() { setPlaying(false); setFinished(true); setWatched(true) }
 
   function handleEnter() {
     setShowToast(true)
@@ -60,12 +61,13 @@ export default function AudioGreeting({ onDone }) {
 />
 
         <button onClick={handleEnter} style={{
-          background: finished ? '#c8a84b' : 'rgba(255,255,255,0.06)',
-          border:`1px solid ${finished ? '#c8a84b' : 'rgba(255,255,255,0.12)'}`,
-          color: finished ? '#0e0e0e' : 'rgba(255,255,255,0.4)',
-          fontSize:11, fontWeight: finished ? 600 : 400,
+  background: watched ? '#c8a84b' : 'rgba(255,255,255,0.06)',
+  border:`1px solid ${watched ? '#c8a84b' : 'rgba(255,255,255,0.12)'}`,
+  color: watched ? '#0e0e0e' : 'rgba(255,255,255,0.4)',
+  fontSize:11, fontWeight: watched ? 600 : 400,
           letterSpacing:'0.2em', textTransform:'uppercase',
-          padding:'16px 40px', cursor:'pointer',
+         padding:'16px 40px', cursor: watched ? 'pointer' : 'default',
+pointerEvents: watched ? 'auto' : 'none',
           transition:'all 0.3s', fontFamily:'var(--font)',
         }}>
           Войти в клуб →
