@@ -102,5 +102,5 @@ export const EVENTS = Array.from({ length: 21 }, (_, i) => ({
   title: 'Воспоминание',
   year: '',
   description: '',
-  photo: `photos/day${i + 1}.jpg`,
+  photo: `assets/photos/day${i + 1}.jpg`,
 }))
