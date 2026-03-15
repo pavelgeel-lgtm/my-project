@@ -66,9 +66,9 @@ async function send() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: system },
-          ...updatedWithUser
-        ],
+  { role: 'system', content: system },
+  ...updatedWithUser.slice(-10)
+],
         max_tokens: 400,
         temperature: 0.85,
       })
