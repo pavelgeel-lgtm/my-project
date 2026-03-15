@@ -51,23 +51,13 @@ export default function AudioGreeting({ onDone }) {
           Специальное обращение для Максима Владимировича
         </div>
 
-        <audio ref={audioRef} src="assets/audio/greeting.mp3" onEnded={handleEnded} />
-
-        <button onClick={toggle} style={{
-          width:80, height:80, borderRadius:'50%',
-          border:'1px solid rgba(200,168,75,0.5)',
-          background: playing ? '#c8a84b' : 'transparent',
-          color: playing ? '#0e0e0e' : '#c8a84b',
-          fontSize:22, cursor:'pointer',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          margin:'0 auto 1.5rem', transition:'all 0.2s', fontFamily:'var(--font)',
-        }}>
-          {playing ? '❚❚' : '▶'}
-        </button>
-
-        <div style={{ fontSize:11, fontWeight:300, letterSpacing:'0.15em', color:'rgba(255,255,255,0.25)', textTransform:'uppercase', marginBottom:'3rem' }}>
-          {playing ? 'Воспроизведение...' : finished ? 'Прослушано' : 'Нажмите для воспроизведения'}
-        </div>
+       <video
+  ref={audioRef}
+  src="assets/video/greeting.mp4"
+  onEnded={handleEnded}
+  controls
+  style={{ width:'100%', maxWidth:480, marginBottom:'1.5rem', borderRadius:4 }}
+/>
 
         <button onClick={handleEnter} style={{
           background: finished ? '#c8a84b' : 'rgba(255,255,255,0.06)',
