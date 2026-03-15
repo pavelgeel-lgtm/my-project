@@ -33,10 +33,16 @@ ${allContext ? `Досье участника:\n${allContext}` : ''}
 
 export default function ChatScreen({ onBack }) {
   const day = getCurrentDay()
-  const [messages, setMessages] = useState([{
-    role: 'assistant',
-    content: `Максим. День ${day}.\n\nРад видеть вас здесь. Чем могу быть полезен?`
-  }])
+ const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('club50_chat_history')
+    if (saved) {
+      try { return JSON.parse(saved) } catch {}
+    }
+    return [{
+      role: 'assistant',
+      content: `Максим. День ${day}.\n\nРад видеть вас здесь. Чем могу быть полезен?`
+    }]
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef(null)
@@ -47,7 +53,11 @@ export default function ChatScreen({ onBack }) {
     const text = input.trim()
     if (!text || loading) return
     const userMsg = { role: 'user', content: text }
-    setMessages(prev => [...prev, userMsg])
+    setMessages(prev => {
+  const updated = [...prev, userMsg]
+  localStorage.setItem('club50_chat_history', JSON.stringify(updated))
+  return updated
+})
     setInput('')
     setLoading(true)
     try {
@@ -72,6 +82,11 @@ export default function ChatScreen({ onBack }) {
       const data = await res.json()
       const reply = data.choices?.[0]?.message?.content || 'Подождите немного, Максим...'
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+      setMessages(prev => {
+  const updated = [...prev, { role: 'assistant', content: reply }]
+  localStorage.setItem('club50_chat_history', JSON.stringify(updated))
+  return updated
+})
     } catch (e) {
       console.error('Grok error:', e)
       setMessages(prev => [...prev, { role: 'assistant', content: 'Связь прервана. Попробуйте снова.' }])
