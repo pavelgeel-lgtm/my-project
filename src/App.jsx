@@ -11,8 +11,12 @@ import FinalGift from './components/FinalGift'
 
 const AUDIO_KEY = 'club50_audio_shown'
 
+const CODE_KEY = 'club50_unlocked'
+const SECRET = 'спот'
+
 export default function App() {
   const [screen, setScreen] = useState(() => {
+    if (!localStorage.getItem(CODE_KEY)) return 'code'
     if (!isActivated()) return 'invite'
     if (!localStorage.getItem(AUDIO_KEY)) return 'audio'
     return 'dashboard'
@@ -27,8 +31,13 @@ export default function App() {
 
   return (
     <>
+      {screen === 'code' && (
+        <CodeScreen onUnlock={() => {
+          localStorage.setItem(CODE_KEY, '1')
+          setScreen('invite')
+        }} />
+      )}
       {screen === 'invite' && <InviteScreen onActivated={() => setScreen('audio')} />}
-      {screen === 'audio' && <AudioGreeting onDone={() => { localStorage.setItem(AUDIO_KEY,'1'); setScreen('dashboard') }} />}
       {screen === 'dashboard' && <Dashboard onOpenDay={openDay} onOpenArchive={() => setScreen('archive')} onOpenChat={openChat} />}
       {screen === 'day' && activeDay && (
         activeDay === 21 && isDayCompleted(21)
