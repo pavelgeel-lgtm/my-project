@@ -55,7 +55,7 @@ export default function ChatScreen({ onBack }) {
   'Content-Type': 'application/json',
 },
         body: JSON.stringify({
-          model: 'grok-3',
+          model: 'llama-3.3-70b-versatile',
           messages: [
             { role: 'system', content: system },
             ...messages,
